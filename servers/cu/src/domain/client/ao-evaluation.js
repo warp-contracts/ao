@@ -45,9 +45,9 @@ const toEvaluation = applySpec({
   evaluatedAt: prop('evaluatedAt'),
   output: prop('output')
 })
-
-export function findEvaluationWith ({ pouchDb }) {
+export function findEvaluationWith ({ pouchDb, logger }) {
   return ({ processId, to, ordinate, cron }) => {
+    logger('ao-evaluation: evaluation id', createEvaluationId({ processId, timestamp: to, ordinate, cron }))
     return of({ processId, to, ordinate, cron })
       .chain(fromPromise(() => pouchDb.get(createEvaluationId({ processId, timestamp: to, ordinate, cron }))))
       .bichain(
@@ -129,6 +129,7 @@ export function findLatestEvaluationsWith ({ pouchDb }) {
 
 export function saveEvaluationWith ({ pouchDb, logger: _logger }) {
   return (evaluation) => {
+    _logger('ao-evaluation: save evaluation', evaluation)
     return of(evaluation)
       .map(
         converge(
@@ -167,9 +168,12 @@ export function saveEvaluationWith ({ pouchDb, logger: _logger }) {
       .map(evaluationDocSchema.parse)
       .chain((doc) =>
         of(doc)
-          .chain(fromPromise((doc) => pouchDb.put(doc)))
+          .chain(fromPromise((doc) => {
+            _logger('ao-evaluation: doc', doc)
+            return pouchDb.put(doc)}))
           .bichain(
             (err) => {
+              _logger('ao-evaluation: err', err)
               /**
                * Already exists, so just return the doc
                */

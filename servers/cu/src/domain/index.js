@@ -194,6 +194,10 @@ export const createApis = async (ctx) => {
       evaluate: (...args) => workerPool.exec('evaluate', args),
       logger
     }),
+    loadEvaluatorWarp: AoModuleClient.evaluatorWith({
+      evaluate: (...args) => workerPool.exec('evaluateWarp', args),
+      logger
+    }),
     findMessageHashBefore: AoEvaluationClient.findMessageHashBeforeWith({ pouchDb, logger }),
     loadTimestamp: AoSuClient.loadTimestampWith({ fetch: ctx.fetch, logger }),
     loadProcess: AoSuClient.loadProcessWith({ fetch: ctx.fetch, logger }),

@@ -125,6 +125,7 @@ export function readStateWith (env) {
             of({ id: processId, messageId, to, ordinate, cron, stats, needsMemory })
               .chain(loadProcess)
               .chain((res) => {
+                env.logger('readState: loadProcess response', res)
                 /**
                  * The exact evaluation (identified by its input messages timestamp)
                  * was found in the cache, so just return it.

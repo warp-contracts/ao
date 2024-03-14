@@ -225,6 +225,7 @@ function loadLatestEvaluationWith ({ findEvaluation, findProcessMemoryBefore, lo
       cron: ctx.cron
     })
       .map((found) => {
+        logger('FOUND', found)
         const exact = found.timestamp === ctx.to &&
           found.ordinate === ctx.ordinate &&
           found.cron === ctx.cron

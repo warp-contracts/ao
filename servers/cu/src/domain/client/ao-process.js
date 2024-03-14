@@ -418,7 +418,9 @@ export function findProcessMemoryBeforeWith ({
   function maybeCached ({ processId, timestamp, ordinate, cron }) {
     return of(processId)
       .chain((processId) => {
+        logger('ao-process: process id', processId)
         const cached = cache.get(processId)
+        logger('ao-process: cached process', cached)
 
         /**
          * There is no cached memory, or the cached memory is later
@@ -628,6 +630,7 @@ export function findProcessMemoryBeforeWith ({
 export function saveLatestProcessMemoryWith ({ cache, logger, saveCheckpoint, EAGER_CHECKPOINT_THRESHOLD }) {
   return async ({ processId, moduleId, messageId, timestamp, epoch, nonce, ordinate, cron, blockHeight, Memory, evalCount }) => {
     const cached = cache.get(processId)
+    console.log('ao-process: cached', cached)
 
     /**
      * The provided value is not later than the currently cached value,

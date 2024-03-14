@@ -34,10 +34,10 @@ const toEvaledCron = ({ timestamp, cron }) => `${timestamp}-${cron}`
  * @property {any} db
  */
 
-function evaluatorWith ({ loadEvaluator }) {
-  loadEvaluator = fromPromise(evaluatorSchema.implement(loadEvaluator))
+function evaluatorWith ({ loadEvaluatorWarp }) {
+  loadEvaluatorWarp = fromPromise(evaluatorSchema.implement(loadEvaluatorWarp))
 
-  return (ctx) => loadEvaluator({
+  return (ctx) => loadEvaluatorWarp({
     moduleId: ctx.moduleId,
     gas: ctx.moduleComputeLimit,
     memLimit: ctx.moduleMemoryLimit
@@ -219,7 +219,7 @@ export function evaluateWith (env) {
                         /**
                          * Where the actual evaluation is performed
                          */
-                        .then((Memory) => ctx.evaluator({ name, processId: ctx.id, Memory, message, AoGlobal }))
+                        .then((Memory) => ctx.evaluator({name, processId: ctx.id, Memory, message, AoGlobal}) )
                         /**
                          * These values are folded,
                          * so that we can potentially update the process memory cache
@@ -227,6 +227,7 @@ export function evaluateWith (env) {
                          */
                         .then(mergeLeft({ noSave, message, cron, ordinate }))
                         .then(async (output) => {
+                          logger('output', output)
                           if (cron) ctx.stats.messages.cron++
                           else ctx.stats.messages.scheduled++
 
@@ -305,6 +306,7 @@ export function evaluateWith (env) {
          */
         const { noSave, cron, ordinate, message } = prev
         if (!noSave) {
+          logger('memory', prev.Memory.length)
           await saveLatestProcessMemory({
             processId: ctx.id,
             moduleId: ctx.moduleId,
