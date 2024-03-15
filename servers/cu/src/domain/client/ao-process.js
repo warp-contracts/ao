@@ -10,6 +10,7 @@ import { LRUCache } from 'lru-cache'
 
 import { processSchema } from '../model.js'
 import { COLLATION_SEQUENCE_MIN_CHAR } from './pouchdb.js'
+import fs from 'fs';
 
 const gunzipP = promisify(gunzip)
 const gzipP = promisify(gzip)

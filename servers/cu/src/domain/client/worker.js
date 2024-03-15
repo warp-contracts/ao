@@ -399,17 +399,17 @@ export function evaluateWithWarp ({
       )
       .chain(fromPromise(async(wasmModule) => {
         logger('memory', Memory)
-        const quickJsPlugin = new QuickJsPlugin({compress: true});
+        const quickJsPlugin = new QuickJsPlugin({});
 
         logger('MESSAGE', message)
-        if (message.Tags.find(t => t.value == 'Process')) {
-          return {
-            Memory: null,
-            Output: null,
-            Messages: [],
-            Spawns: []
-          }
-        }
+        // if (message.Tags.find(t => t.value == 'Process')) {
+        //   return {
+        //     Memory: null,
+        //     Output: null,
+        //     Messages: [],
+        //     Spawns: []
+        //   }
+        // }
         const quickJsHandlerApi = await quickJsPlugin.process({contractSource: wasmModule, wasmMemory: Memory});
         return await quickJsHandlerApi.handle(message);
       }))
@@ -507,7 +507,9 @@ export function evaluateWithWarp ({
       .chain((wasmInstance) =>
         of(wasmInstance)
           .map((wasmInstance) => {
-            logger('wasm instance 2', wasmInstance)
+            if (wasmInstance.Memory) {
+            fs.writeFileSync('mem.dat', wasmInstance.Memory)
+            }
             logger('Evaluating message "%s" to process "%s"', name, processId)
             return wasmInstance
           })
