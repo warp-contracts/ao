@@ -11,11 +11,13 @@ import { T, always, applySpec, assocPath, cond, defaultTo, identity, ifElse, is,
 import { LRUCache } from 'lru-cache'
 import { Rejected, Resolved, fromPromise, of } from 'hyper-async'
 import AoLoader from '@permaweb/ao-loader'
-import { QuickJsPlugin } from 'warp-contracts-plugin-quickjs';
+import { QuickJsPlugin } from 'warp-contracts-plugin-quickjs'
 import { createLogger } from '../logger.js'
 import { joinUrl } from '../utils.js'
 
 const pipelineP = promisify(pipeline)
+const textDecoder = new TextDecoder()
+const handlersCache = new Map()
 
 function wasmResponse (stream) {
   return new Response(stream, { headers: { 'Content-Type': 'application/wasm' } })
@@ -322,9 +324,8 @@ export function evaluateWith ({
           .map(mergeOutput(Memory, name, processId))
       )
       .toPromise()
-          }
+  }
 }
-
 
 export function evaluateWithWarp ({
   wasmInstanceCache,
@@ -365,12 +366,12 @@ export function evaluateWithWarp ({
       .chain(fromPromise(streamTransactionData))
       .chain(fromPromise((res) => res.text()))
 
-      /**
+    /**
        * Simoultaneously cache the binary in a file
        * and compile to a WebAssembly.Module
        */
-      // .chain(fromPromise(res => res))
-      // .map((res) => res)
+    // .chain(fromPromise(res => res))
+    // .map((res) => res)
   }
 
   function loadInstance ({ streamId, moduleId, gas, memLimit, Memory, message, AoGlobal }) {
@@ -397,46 +398,58 @@ export function evaluateWithWarp ({
          */
         Resolved
       )
-      .chain(fromPromise(async(wasmModule) => {
+      .chain(fromPromise(async (wasmModule) => {
         logger('memory', Memory)
-        const quickJsPlugin = new QuickJsPlugin({});
+
+        const parsedMemory = Memory ? JSON.parse(textDecoder.decode(Memory)) : null
 
         logger('MESSAGE', message)
-        // if (message.Tags.find(t => t.value == 'Process')) {
-        //   return {
-        //     Memory: null,
-        //     Output: null,
-        //     Messages: [],
-        //     Spawns: []
-        //   }
-        // }
-        const quickJsHandlerApi = await quickJsPlugin.process({contractSource: wasmModule, wasmMemory: Memory});
-        return await quickJsHandlerApi.handle(message);
+
+        if (!handlersCache.has(message.Target)) {
+          logger('Process handler not cached', message.Target)
+          const quickJsPlugin = new QuickJsPlugin({})
+          const quickJsHandlerApi = await quickJsPlugin.process({
+            contractSource: wasmModule,
+            binaryType: 'release_sync'
+          })
+          handlersCache.set(message.Target, quickJsHandlerApi)
+        }
+
+        // for debugging, inline later
+        const result = await handlersCache.get(message.Target).handle(message, parsedMemory)
+        return result
       }))
       /**
        * Cache the wasm module for this particular stream,
        * in memory, for quick retrieval next time
        */
-      // .map((wasmInstance) => {
-      //   logger(streamId, wasmInstance)
-      //   wasmInstanceCache.set(streamId, wasmInstance.Memory)
-      //   return wasmInstance
-      // })
+    // .map((wasmInstance) => {
+    //   logger(streamId, wasmInstance)
+    //   wasmInstanceCache.set(streamId, wasmInstance.Memory)
+    //   return wasmInstance
+    // })
   }
 
   function maybeCachedInstance ({ streamId, moduleId, gas, memLimit, Memory, message, AoGlobal }) {
     return of(streamId)
       .map((streamId) => wasmInstanceCache.get(streamId))
       .chain((wasmInstance) => {
-        wasmInstance = wasmInstance ? {
-          streamId, moduleId, gas, memLimit, message, AoGlobal,
-          Memory: wasmInstance
-        } : null
+        wasmInstance = wasmInstance
+          ? {
+              streamId,
+              moduleId,
+              gas,
+              memLimit,
+              message,
+              AoGlobal,
+              Memory: wasmInstance
+            }
+          : null
         logger('success', wasmInstance)
         return wasmInstance
-        ? Resolved(wasmInstance)
-        : Rejected({ streamId, moduleId, gas, memLimit, Memory, message, AoGlobal })
-  })
+          ? Resolved(wasmInstance)
+          : Rejected({ streamId, moduleId, gas, memLimit, Memory, message, AoGlobal })
+      })
   }
 
   /**
@@ -507,9 +520,9 @@ export function evaluateWithWarp ({
       .chain((wasmInstance) =>
         of(wasmInstance)
           .map((wasmInstance) => {
-            if (wasmInstance.Memory) {
+            /* if (wasmInstance.Memory) {
             fs.writeFileSync('mem.dat', wasmInstance.Memory)
-            }
+            } */
             logger('Evaluating message "%s" to process "%s"', name, processId)
             return wasmInstance
           })
@@ -528,7 +541,7 @@ export function evaluateWithWarp ({
           .map(mergeOutput(Memory))
       )
       .toPromise()
-          }
+  }
 }
 
 if (!process.env.NO_WORKER) {
@@ -555,7 +568,7 @@ if (!process.env.NO_WORKER) {
       wasmInstanceCache: createWasmInstanceCache({ MAX_SIZE: workerData.WASM_INSTANCE_CACHE_MAX_SIZE }),
       readWasmFile: readWasmFileWith({ DIR: workerData.WASM_BINARY_FILE_DIRECTORY }),
       writeWasmFile: writeWasmFileWith({ DIR: workerData.WASM_BINARY_FILE_DIRECTORY, logger }),
-      streamTransactionData: streamTransactionDataWith({ fetch, GATEWAY_URL: workerData.GATEWAY_URL, logger }),
+      streamTransactionData: streamTransactionDataWith({ fetch, ARWEAVE_URL: workerData.ARWEAVE_URL, logger }),
       logger
     })
   })

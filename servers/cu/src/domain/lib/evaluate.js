@@ -219,7 +219,7 @@ export function evaluateWith (env) {
                         /**
                          * Where the actual evaluation is performed
                          */
-                        .then((Memory) => ctx.evaluator({name, processId: ctx.id, Memory, message, AoGlobal}) )
+                        .then((Memory) => ctx.evaluator({ name, processId: ctx.id, Memory, message, AoGlobal }))
                         /**
                          * These values are folded,
                          * so that we can potentially update the process memory cache
@@ -306,7 +306,7 @@ export function evaluateWith (env) {
          */
         const { noSave, cron, ordinate, message } = prev
         if (!noSave) {
-          logger('memory', prev.Memory.length)
+          logger('memory', prev.Memory)
           await saveLatestProcessMemory({
             processId: ctx.id,
             moduleId: ctx.moduleId,
