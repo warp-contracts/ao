@@ -14,6 +14,9 @@ import AoLoader from '@permaweb/ao-loader'
 import { QuickJsPlugin } from 'warp-contracts-plugin-quickjs'
 import { createLogger } from '../logger.js'
 import { joinUrl } from '../utils.js'
+import { publish as appSyncPublish, initPubSub as initAppSyncPublish } from 'warp-contracts-pubsub'
+
+initAppSyncPublish()
 
 const pipelineP = promisify(pipeline)
 const textDecoder = new TextDecoder()
@@ -334,7 +337,8 @@ export function evaluateWithWarp ({
   writeWasmFile,
   streamTransactionData,
   bootstrapWasmInstance,
-  logger
+  logger,
+  appSyncKey
 }) {
   function maybeCachedModule ({ streamId, moduleId, gas, memLimit, Memory, message, AoGlobal }) {
     return of(moduleId)
@@ -417,6 +421,17 @@ export function evaluateWithWarp ({
 
         // for debugging, inline later
         const result = await handlersCache.get(message.Target).handle(message, parsedMemory)
+        await appSyncPublish(
+            `results/ao/${message.Target}`,
+            JSON.stringify({
+              nonce: message.Nonce,
+              result: result.Result,
+              state: result.State,
+              tags: message.Tags,
+              sent: new Date()
+            }),
+            appSyncKey
+        )
         return result
       }))
       /**
@@ -569,7 +584,8 @@ if (!process.env.NO_WORKER) {
       readWasmFile: readWasmFileWith({ DIR: workerData.WASM_BINARY_FILE_DIRECTORY }),
       writeWasmFile: writeWasmFileWith({ DIR: workerData.WASM_BINARY_FILE_DIRECTORY, logger }),
       streamTransactionData: streamTransactionDataWith({ fetch, ARWEAVE_URL: workerData.ARWEAVE_URL, logger }),
-      logger
+      logger,
+      appSyncKey: workerData.APP_SYNC_KEY
     })
   })
 }

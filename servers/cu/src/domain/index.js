@@ -76,6 +76,7 @@ export const createApis = async (ctx) => {
             WASM_INSTANCE_CACHE_MAX_SIZE: ctx.WASM_INSTANCE_CACHE_MAX_SIZE,
             WASM_BINARY_FILE_DIRECTORY: ctx.WASM_BINARY_FILE_DIRECTORY,
             ARWEAVE_URL: ctx.ARWEAVE_URL,
+            APP_SYNC_KEY: ctx.APP_SYNC_KEY,
             id: workerId
           }
         }

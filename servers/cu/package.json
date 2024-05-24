@@ -33,7 +33,9 @@
     "pouchdb-find": "^8.0.1",
     "ramda": "^0.29.1",
     "warp-arbundles": "^1.0.4",
-    "warp-contracts-plugin-quickjs": "1.1.4",
+    "warp-contracts-plugin-quickjs": "1.1.5",
+    "warp-contracts-pubsub": "^1.0.6",
+    "websocket": "^1.0.34",
     "workerpool": "^9.1.0",
     "zod": "^3.22.4"
   },

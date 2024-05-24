@@ -121,7 +121,8 @@ export const domainConfigSchema = z.object({
    * The amount of time in milliseconds, the CU should wait for evaluation to complete
    * before responding with a "busy" message to the client
    */
-  BUSY_THRESHOLD: positiveIntSchema
+  BUSY_THRESHOLD: positiveIntSchema,
+  APP_SYNC_KEY: z.string().min(1)
 })
 
 export const streamSchema = z.any().refine(stream => {
