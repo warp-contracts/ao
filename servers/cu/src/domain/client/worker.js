@@ -405,7 +405,7 @@ export function evaluateWithWarp ({
       .chain(fromPromise(async (wasmModule) => {
         logger('memory', Memory)
 
-        const parsedMemory = Memory ? JSON.parse(textDecoder.decode(Memory)) : null
+        const parsedMemory = (Memory && Memory.byteLength > 0) ? JSON.parse(textDecoder.decode(Memory)) : null
 
         logger('MESSAGE', message)
 
@@ -425,7 +425,7 @@ export function evaluateWithWarp ({
             `results/ao/${message.Target}`,
             JSON.stringify({
               nonce: message.Nonce,
-              result: result.Result,
+              output: result.Output,
               state: result.State,
               tags: message.Tags,
               sent: new Date()
