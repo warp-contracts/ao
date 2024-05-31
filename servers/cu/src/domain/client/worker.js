@@ -424,6 +424,7 @@ export function evaluateWithWarp ({
         await appSyncPublish(
             `results/ao/${message.Target}`,
             JSON.stringify({
+              txId: message.Id,
               nonce: message.Nonce,
               output: result.Output,
               state: result.State,
