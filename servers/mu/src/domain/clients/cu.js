@@ -20,6 +20,9 @@ function resultWith ({ fetch, CU_URL, logger }) {
 function selectNodeWith ({ CU_URL, logger }) {
   return async (processId) => {
     logger(`Selecting cu for process ${processId}`)
+    if (processId === 'cYHhrCJ4drNrL1HPR2LiahPcKn_ZfYLtxUy7CO-becM') {
+      return 'https://cu.ao-testnet.xyz'
+    }
     return CU_URL
   }
 }

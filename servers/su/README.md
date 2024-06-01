@@ -21,6 +21,13 @@ This is an spec compliant `ao` Scheduler Unit, implemented as a Rust actix web s
 ## Prerequisites
 - PostgreSQL 14 or higher, and a database called `su`
 - Rust and Cargo version 1.75.0 https://www.rust-lang.org/tools/install (unless you are just planning to run the binary)
+  - Apple Silicon:
+    https://stackoverflow.com/a/78271338
+  ```
+  rustup target add x86_64-unknown-linux-gnu
+  cargo build --release --target=x86_64-unknown-linux-gnu
+  ```
+
 
 
 ## Database setup
