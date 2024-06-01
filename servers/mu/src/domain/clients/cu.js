@@ -1,12 +1,16 @@
 function resultWith ({ fetch, CU_URL, logger }) {
   return async (txId, processId) => {
-    logger(`${CU_URL}/result/${txId}?process-id=${processId}&no-busy=1`)
+    const cuUrl = processId === 'cYHhrCJ4drNrL1HPR2LiahPcKn_ZfYLtxUy7CO-becM'
+      ? 'https://cu.ao-testnet.xyz'
+      : CU_URL
+
+    logger(`${cuUrl}/result/${txId}?process-id=${processId}&no-busy=1`)
 
     const requestOptions = {
       timeout: 0
     }
 
-    return fetch(`${CU_URL}/result/${txId}?process-id=${processId}&no-busy=1`, requestOptions)
+    return fetch(`${cuUrl}/result/${txId}?process-id=${processId}&no-busy=1`, requestOptions)
       .then(res => res.json())
       .then(res => res || {
         Messages: [],
