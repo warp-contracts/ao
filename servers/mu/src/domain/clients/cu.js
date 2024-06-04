@@ -1,6 +1,6 @@
 function resultWith ({ fetch, CU_URL, logger }) {
   return async (txId, processId) => {
-    const cuUrl = processId === 'cYHhrCJ4drNrL1HPR2LiahPcKn_ZfYLtxUy7CO-becM'
+    const cuUrl = processId === 'Iny8fK0S1FCSVVOIWubg2L9EXV1RFaxgRJwv5-mwEYk'
       ? 'https://cu.ao-testnet.xyz'
       : CU_URL
 
@@ -24,7 +24,7 @@ function resultWith ({ fetch, CU_URL, logger }) {
 function selectNodeWith ({ CU_URL, logger }) {
   return async (processId) => {
     logger(`Selecting cu for process ${processId}`)
-    if (processId === 'cYHhrCJ4drNrL1HPR2LiahPcKn_ZfYLtxUy7CO-becM') {
+    if (processId === 'Iny8fK0S1FCSVVOIWubg2L9EXV1RFaxgRJwv5-mwEYk') {
       return 'https://cu.ao-testnet.xyz'
     }
     return CU_URL
