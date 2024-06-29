@@ -1,6 +1,12 @@
+const AO_TESTNET_PROCESS = [
+  'AiMTGB8qLZUo3Do9x4vJCCWa-APVxBBoI2KX1jwYQH0',
+  'rH_-7vT_IgfFWiDsrcTghIhb9aRclz7lXcK7RCOV2h8',
+  'Us4BVLXDjtRz7Qzf7osnNcxTsi4vEjfMWo1RRTzhigQ'
+]
+
 function resultWith ({ fetch, CU_URL, logger }) {
   return async (txId, processId) => {
-    const cuUrl = processId === 'rH_-7vT_IgfFWiDsrcTghIhb9aRclz7lXcK7RCOV2h8'
+    const cuUrl = AO_TESTNET_PROCESS.includes(processId)
       ? 'https://cu.ao-testnet.xyz'
       : CU_URL
 
@@ -21,10 +27,11 @@ function resultWith ({ fetch, CU_URL, logger }) {
   }
 }
 
+// TODO: doesn't seem to be used
 function selectNodeWith ({ CU_URL, logger }) {
   return async (processId) => {
     logger(`Selecting cu for process ${processId}`)
-    if (processId === 'rH_-7vT_IgfFWiDsrcTghIhb9aRclz7lXcK7RCOV2h8') {
+    if (AO_TESTNET_PROCESS.includes(processId)) {
       return 'https://cu.ao-testnet.xyz'
     }
     return CU_URL
