@@ -1,7 +1,8 @@
 const AO_TESTNET_PROCESS = [
   'AiMTGB8qLZUo3Do9x4vJCCWa-APVxBBoI2KX1jwYQH0',
   'rH_-7vT_IgfFWiDsrcTghIhb9aRclz7lXcK7RCOV2h8',
-  'Us4BVLXDjtRz7Qzf7osnNcxTsi4vEjfMWo1RRTzhigQ'
+  'Us4BVLXDjtRz7Qzf7osnNcxTsi4vEjfMWo1RRTzhigQ',
+  'KvQhYDJTQwpS3huPUJy5xybUDN3L8SE1mhLOBAt5l6Y'
 ]
 
 function resultWith ({ fetch, CU_URL, logger }) {
