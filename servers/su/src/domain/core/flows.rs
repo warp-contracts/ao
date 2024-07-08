@@ -189,7 +189,7 @@ pub async fn write_item(
             match system_time_u64() {
                 Ok(timestamp) => {
                     let response_json =
-                        json!({ "timestamp": timestamp, "id": message.message_id()? });
+                        json!({ "timestamp": timestamp, "id": message.message_id()?, "message": message });
                     Ok(response_json.to_string())
                 }
                 Err(e) => Err(format!("{:?}", e)),
