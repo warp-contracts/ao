@@ -173,10 +173,10 @@ pub async fn write_item(
             */
             let start_total = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
             let locked_schedule_info = deps.scheduler.acquire_lock(data_item.target()).await?;
+            let mut schedule_info = locked_schedule_info.lock().await;
             let end_acquire_lock = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
             deps.logger.log(format!("=== ACQUIRE LOCK - {:?}", (end_acquire_lock - start_total)));
-
-            let mut schedule_info = locked_schedule_info.lock().await;
+            
             let updated_info = deps
                 .scheduler
                 .update_schedule_info(&mut *schedule_info, data_item.target())
