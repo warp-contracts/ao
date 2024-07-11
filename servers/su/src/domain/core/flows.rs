@@ -186,12 +186,15 @@ pub async fn write_item(
 
             let build_result = builder.build_message(input, &*updated_info).await?;
             let message = Message::from_bundle(&build_result.bundle)?;
+            let end_create_msg = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+            deps.logger.log(format!("=== CREATING MESSAGE - {:?}", (end_create_msg - end_update_schedule_info)));
+
             deps.data_store
                 .save_message(&message, &build_result.binary)
                 .await?;
             deps.logger.log(format!("saved message"));
             let end_save_msg = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-            deps.logger.log(format!("=== SAVING MESSAGE - {:?}", (end_save_msg - end_update_schedule_info)));
+            deps.logger.log(format!("=== SAVING MESSAGE - {:?}", (end_save_msg - end_create_msg)));
 
 
             upload(&deps, build_result.binary.to_vec()).await?;
