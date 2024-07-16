@@ -46,7 +46,7 @@ function resultWith ({ fetch, histogram, CU_URL, logger }) {
         delay: 500,
         log: logger,
         name: `forwardAssignment(${JSON.stringify({
-          CU_URL,
+          cuUrl,
           processId,
           txId
         })})`
