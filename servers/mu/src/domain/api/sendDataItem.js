@@ -34,6 +34,8 @@ export function sendDataItemWith ({
 
   const locateProcessLocal = fromPromise(locateProcess)
 
+  const schedLocationCache = new Map()
+
   /**
      * If the data item is a Message, then cranking and tracing
      * must also be performed.
@@ -96,6 +98,8 @@ export function sendDataItemWith ({
           if (hasTargetTag) {
             return Rejected({ res })
           }
+          const schedulerTag = res.dataItem.tags.find((tag) => tag.name === 'Scheduler')
+          schedLocationCache.set(res.dataItem.id, schedulerTag.value)
           return Resolved()
         })
         .bichain(({ res }) => {
@@ -125,7 +129,7 @@ export function sendDataItemWith ({
                   schedLocation and it will get sent directly to
                   Arweave
               */
-              return locateProcessLocal(ctx.dataItem.target)
+              return locateProcessLocal(ctx.dataItem.target, schedLocationCache.get(ctx.dataItem.target))
                 .chain((schedLocation) => sendMessage({ ...ctx, schedLocation }))
             }
             return sendProcess(ctx)
