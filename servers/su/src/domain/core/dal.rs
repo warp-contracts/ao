@@ -62,6 +62,7 @@ pub trait Config: Send + Sync {
     fn gateway_url(&self) -> String;
     fn mode(&self) -> String;
     fn scheduler_list_path(&self) -> String;
+    fn upload_data_items(&self) -> bool;
 }
 
 #[derive(Debug)]

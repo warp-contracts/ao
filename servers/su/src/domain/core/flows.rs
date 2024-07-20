@@ -224,7 +224,10 @@ pub async fn write_item(
                     let end_save_msg = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                     deps_clone.logger.log(format!("=== SAVING MESSAGE - {:?}", (end_save_msg - start_sign)));
 
-                    upload(&deps_clone, result.binary.to_vec()).await.unwrap();
+                    if deps_clone.config.upload_data_items() {
+                        upload(&deps_clone, result.binary.to_vec()).await.unwrap();
+                    }
+
                     let end_upload_turbo = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                     deps_clone.logger.log(format!("Background task completed"));
                     println!();
