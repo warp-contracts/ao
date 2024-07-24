@@ -19,9 +19,10 @@ export function processMsgWith ({
   logger,
   writeDataItemArweave,
   isWallet,
-  fetchSchedulerProcess
+  fetchSchedulerProcess,
+  db
 }) {
-  const buildTx = buildTxWith({ buildAndSign, logger, locateProcess, fetchSchedulerProcess, isWallet })
+  const buildTx = buildTxWith({ buildAndSign, logger, locateProcess, fetchSchedulerProcess, isWallet, db })
   const getCuAddress = getCuAddressWith({ selectNode, logger })
   const writeMessage = writeMessageTxWith({ writeDataItem, logger, writeDataItemArweave })
   const pullResult = pullResultWith({ fetchResult, logger })
