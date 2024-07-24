@@ -48,10 +48,10 @@ function resultWith ({ fetch, histogram, CU_URL, logger }) {
           requestOptions
         ).then(okRes),
       {
-        maxRetries: 5,
+        maxRetries: 0,
         delay: 500,
         log: logger,
-        name: `forwardAssignment(${JSON.stringify({
+        name: `pullCuResult(${JSON.stringify({
           cuUrl,
           processId,
           txId

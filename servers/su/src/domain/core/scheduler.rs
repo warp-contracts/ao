@@ -24,7 +24,7 @@ pub struct ScheduleInfo {
     pub nonce: i32,
     pub timestamp: i64,
     pub hash_chain: String,
-    pub assignment_id: Option<String>
+    pub message_id: Option<String>
 }
 
 pub type LockedScheduleInfo = Arc<Mutex<ScheduleInfo>>;
@@ -52,7 +52,7 @@ impl ProcessScheduler {
 
     /*
         acquire the lock while also obtaining
-        the info needed epoch, nonce etc.. to
+        the info needed epoch, nonce etc... to
         build a valid item in the schedule
     */
     pub async fn acquire_lock(&self, id: String) -> Result<LockedScheduleInfo, String> {
@@ -65,7 +65,7 @@ impl ProcessScheduler {
                         nonce: 0,
                         timestamp: 0,
                         hash_chain: String::new(),
-                        assignment_id: None
+                        message_id: None
                     }))
                 })
                 .value()
@@ -80,7 +80,7 @@ impl ProcessScheduler {
         schedule_info: &'a mut ScheduleInfo,
         id: String,
     ) -> Result<&mut ScheduleInfo, String> {
-        let (current_epoch, current_nonce, current_hash_chain, current_timestamp, assignment_id) =
+        let (current_epoch, current_nonce, current_hash_chain, current_timestamp, message_id) =
             match fetch_values(self.deps.clone(), &id, schedule_info).await {
                 Ok(vals) => vals,
                 Err(e) => return Err(format!("error acquiring scheduler lock {}", e)),
@@ -89,7 +89,7 @@ impl ProcessScheduler {
         schedule_info.nonce = current_nonce;
         schedule_info.hash_chain = current_hash_chain;
         schedule_info.timestamp = current_timestamp;
-        schedule_info.assignment_id = assignment_id;
+        schedule_info.message_id = message_id;
         Ok(schedule_info)
     }
 }
@@ -146,7 +146,7 @@ fn gen_hash_chain(
 
 /*
     retrieve the epoch, nonce, hash_chain and timestamp
-    increment the values here because this wont be called
+    increment the values here because this won't be called
     again until the lock is released.
 */
 async fn fetch_values(
@@ -169,7 +169,7 @@ async fn fetch_values(
             Err(e) => return Err(format!("{:?}", e)),
         };
         let end_get_latest_message = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-        deps.logger.log(format!("=== get_latest_message - {:?}", (end_get_latest_message - start_total)));
+        deps.logger.log(format!("=== get_latest_message - {:?}", end_get_latest_message - start_total));
 
 
         match latest_message {
@@ -178,11 +178,13 @@ async fn fetch_values(
                 let nonce = previous_message.nonce().unwrap() + 1;
                 let hash_chain = gen_hash_chain(
                     &previous_message.hash_chain().unwrap(),
-                    Some(&previous_message.assignment_id().unwrap()),
+                    // at most one message with same message_id in warp
+                    // i.e. no multiple assignments for the same message
+                    Some(&previous_message.message_id().unwrap()),
                 )?;
                 let end_hash_chain = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-                deps.logger.log(format!("=== end_hash_chain - {:?}", (end_hash_chain - end_get_latest_message)));
-                Ok((epoch, nonce, hash_chain, millis, Some(previous_message.assignment_id().unwrap())))
+                deps.logger.log(format!("=== end_hash_chain - {:?}", end_hash_chain - end_get_latest_message));
+                Ok((epoch, nonce, hash_chain, millis, Some(previous_message.message_id().unwrap())))
             }
             None => {
                 let hash_chain = gen_hash_chain(&process_id, None)?;
@@ -194,9 +196,9 @@ async fn fetch_values(
         let nonce = schedule_info.nonce().parse::<i32>().unwrap() + 1;
         let hash_chain = gen_hash_chain(
             &schedule_info.hash_chain(),
-            Some(schedule_info.assignment_id.as_ref().unwrap().as_str()),
+            Some(schedule_info.message_id.as_ref().unwrap().as_str()),
         )?;
-        Ok((epoch.parse().unwrap(), nonce, hash_chain, millis, Some(schedule_info.assignment_id.clone().unwrap())))
+        Ok((epoch.parse().unwrap(), nonce, hash_chain, millis, schedule_info.clone().message_id))
     }
 }
 

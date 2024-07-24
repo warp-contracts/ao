@@ -175,31 +175,26 @@ pub async fn write_item(
             let locked_schedule_info = deps.scheduler.acquire_lock(data_item.target()).await?;
             let mut schedule_info = locked_schedule_info.lock().await;
             let end_acquire_lock = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-            deps.logger.log(format!("=== ACQUIRE LOCK - {:?}", (end_acquire_lock - start_total)));
+            deps.logger.log(format!("=== ACQUIRE LOCK - {:?}", end_acquire_lock - start_total));
 
             let updated_info = deps
                 .scheduler
                 .update_schedule_info(&mut *schedule_info, data_item.target())
                 .await?;
-            let end_update_schedule_info = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-            deps.logger.log(format!("=== UPDATE SCHEDULE INFO - {:?}", (end_update_schedule_info - end_acquire_lock)));
 
-
-            let BundleOnlyResult { bundle_data_item: _, bundle } = builder.build_message_only(input.clone(), &*updated_info).await?;
+            let BundleOnlyResult { bundle_data_item, bundle } = builder.build_message_only(input.clone(), &*updated_info).await?;
             let message = Message::from_bundle(&bundle)?;
-            updated_info.assignment_id = Some(message.clone().assignment.id);
-            let end_create_msg = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-            deps.logger.log(format!("=== CREATING MESSAGE - {:?}", end_create_msg - end_update_schedule_info));
 
-            deps.logger.log(format!("=== update info - {:?}", updated_info.clone()));
-
+            deps.data_store
+                .save_message(&message, &[])
+                .await.unwrap();
             let deps_clone = deps.clone();
             let updated_info_clone = ScheduleInfo {
                 epoch: updated_info.epoch,
                 nonce: updated_info.nonce,
                 timestamp: updated_info.timestamp,
                 hash_chain: updated_info.hash_chain.clone(),
-                assignment_id: updated_info.assignment_id.clone()
+                message_id: updated_info.message_id.clone()
             };
             let input_clone = input.clone();
 
@@ -218,11 +213,11 @@ pub async fn write_item(
                     let message = Message::from_bundle(&result.bundle).unwrap();
 
                     deps_clone.data_store
-                        .save_message(&message, &result.binary)
+                        .save_message(&message, &[])
                         .await.unwrap();
-                    deps_clone.logger.log(format!("saved message"));
+                    deps_clone.logger.log("saved message".to_string());
                     let end_save_msg = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-                    deps_clone.logger.log(format!("=== SAVING MESSAGE - {:?}", (end_save_msg - start_sign)));
+                    deps_clone.logger.log(format!("=== SAVING MESSAGE - {:?}", end_save_msg - start_sign));
 
                     if deps_clone.config.upload_data_items() {
                         upload(&deps_clone, result.binary.to_vec()).await.unwrap();

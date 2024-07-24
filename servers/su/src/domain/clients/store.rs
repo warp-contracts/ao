@@ -9,6 +9,7 @@ use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
 use diesel::r2d2::Pool;
 use diesel::result::Error as DieselError;
+use diesel::upsert::excluded;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenv::dotenv;
 use futures::future::join_all;
@@ -548,7 +549,7 @@ impl DataStore for StoreClient {
             message_id: &message.message_id()?,
             assignment_id: &message.assignment_id()?,
             message_data: serde_json::to_value(message).expect("Failed to serialize Message"),
-            bundle: &[],
+            bundle: bundle_in,
             epoch: &message.epoch()?,
             nonce: &message.nonce()?,
             timestamp: &message.timestamp()?,
@@ -557,6 +558,16 @@ impl DataStore for StoreClient {
 
         match diesel::insert_into(messages)
             .values(&new_message)
+            .on_conflict(message_id)
+            .do_update()
+            .set((
+                assignment_id.eq(excluded(assignment_id)),
+                message_data.eq(excluded(message_data)),
+                epoch.eq(excluded(epoch)),
+                nonce.eq(excluded(nonce)),
+                timestamp.eq(excluded(timestamp)),
+                hash_chain.eq(excluded(hash_chain)),
+            ))
             .execute(conn)
         {
             Ok(row_count) => {
@@ -565,20 +576,6 @@ impl DataStore for StoreClient {
                         "Error saving message".to_string(),
                     )) // Return a custom error for duplicates
                 } else {
-                    /*let start = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-                    let bytestore = self.bytestore.clone();
-                    if bytestore.is_ready() {
-                      bytestore
-                          .save_binary(
-                              message.message_id()?,
-                              Some(message.assignment_id()?),
-                              message.process_id()?,
-                              message.timestamp()?.to_string(),
-                              bundle_in.to_vec(),
-                          )?;
-                    }
-                    let end = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-                    self.logger.log(format!("=== BINARY STORAGE - {:?}", (end - start)));*/
                     Ok("saved".to_string())
                 }
             }
