@@ -1,6 +1,7 @@
 import { Resolved, fromPromise, of } from 'hyper-async'
 import z from 'zod'
 import { checkStage } from '../utils.js'
+import { getSchedulerOwner } from './su-cache.js'
 
 const ctxSchema = z.object({
   tx: z.object({
@@ -13,7 +14,7 @@ const ctxSchema = z.object({
 }).passthrough()
 
 export function buildTxWith (env) {
-  let { buildAndSign, logger, locateProcess, fetchSchedulerProcess, isWallet } = env
+  let { buildAndSign, logger, locateProcess, fetchSchedulerProcess, isWallet, db } = env
   locateProcess = fromPromise(locateProcess)
   fetchSchedulerProcess = fromPromise(fetchSchedulerProcess)
   buildAndSign = fromPromise(buildAndSign)
@@ -24,7 +25,7 @@ export function buildTxWith (env) {
     return isWallet(ctx.cachedMsg.processId)
       .chain(
         (isWalletId) => {
-          return locateProcess(ctx.cachedMsg.fromProcessId)
+          return locateProcess(ctx.cachedMsg.fromProcessId, getSchedulerOwner(db, ctx.cachedMsg.fromProcessId))
             .chain(
               (fromSchedLocation) => fetchSchedulerProcess(
                 ctx.cachedMsg.fromProcessId,
@@ -41,7 +42,7 @@ export function buildTxWith (env) {
                     goes straight to Arweave.
                   */
                   if (isWalletId) { return of({ fromProcessSchedData }) }
-                  return locateProcess(ctx.cachedMsg.processId)
+                  return locateProcess(ctx.cachedMsg.processId, getSchedulerOwner(db, ctx.cachedMsg.processId))
                     .map((schedLocation) => {
                       return {
                         schedLocation,

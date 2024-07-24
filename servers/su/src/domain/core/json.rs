@@ -271,11 +271,14 @@ impl Message {
     }
 
     pub fn from_bundle(data_bundle: &DataBundle) -> Result<Self, JsonErrorType> {
-        let id = data_bundle.items[0].id().clone();
+        let signature = data_bundle.items[0].signature().clone();
+        let id = match signature.is_empty() {
+            true => "".to_string(),
+            false => data_bundle.items[0].id().clone(),
+        };
         let tags = data_bundle.items[0].tags();
         let owner = data_bundle.items[0].owner().clone();
         let target = data_bundle.items[0].target().clone();
-        let signature = data_bundle.items[0].signature().clone();
         let anchor = data_bundle.items[0].anchor().clone();
 
         let ac = anchor.clone();

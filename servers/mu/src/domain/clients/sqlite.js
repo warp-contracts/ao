@@ -15,6 +15,14 @@ const createTasks = async (db) => db.prepare(
   ) WITHOUT ROWID;`
 ).run()
 
+const createSchedulerOwner = async (db) => db.exec(
+  `CREATE TABLE IF NOT EXISTS scheduler_owner (
+    process_id TEXT UNIQUE NOT NULL,
+    owner TEXT NOT NULL 
+  );
+  `
+)
+
 let internalSqliteDb
 export async function createSqliteClient ({ url, bootstrap = false, walLimit = bytes.parse('100mb') }) {
   if (internalSqliteDb) return internalSqliteDb
@@ -32,13 +40,16 @@ export async function createSqliteClient ({ url, bootstrap = false, walLimit = b
       if (stat && stat.size > walLimit) db.pragma('wal_checkpoint(RESTART)')
     }), 5000).unref()
 
-    await Promise.resolve()
-      .then(() => createTasks(db))
+    await createTasks(db)
+    await createSchedulerOwner(db)
+    /* await Promise.resolve()
+      .then(() => createTasks(db)) */
   }
 
   return {
-    query: async ({ sql, parameters }) => db.prepare(sql).all(...parameters),
-    run: async ({ sql, parameters }) => db.prepare(sql).run(...parameters),
+    query: ({ sql, parameters }) => db.prepare(sql).all(...parameters),
+    run: ({ sql, parameters }) => db.prepare(sql).run(...parameters),
+    get: ({ sql, parameters }) => db.prepare(sql).get(...parameters),
     transaction: async (statements) => db.transaction(
       (statements) => statements.map(({ sql, parameters }) => db.prepare(sql).run(...parameters))
     )(statements),

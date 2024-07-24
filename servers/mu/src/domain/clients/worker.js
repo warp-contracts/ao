@@ -199,7 +199,8 @@ const processResult = processResultWith({
   enqueueResults,
   processMsg,
   processSpawn,
-  processAssign
+  processAssign,
+  db
 })
 
 const processResults = processResultsWith({

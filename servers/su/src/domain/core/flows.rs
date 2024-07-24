@@ -1,12 +1,12 @@
 use std::sync::Arc;
 use std::time::Instant;
 use std::time::{SystemTime, SystemTimeError, UNIX_EPOCH};
-
+use actix_web::web;
 use dotenv::dotenv;
 use serde_json::json;
 use simd_json::to_string as simd_to_string;
-
-use super::builder::Builder;
+use crate::domain::core::scheduler::ScheduleInfo;
+use super::builder::{Builder, BundleOnlyResult};
 use super::json::{Message, Process};
 use super::scheduler;
 
@@ -155,7 +155,7 @@ pub async fn write_item(
             let process = Process::from_bundle(&build_result.bundle)?;
             deps.data_store
                 .save_process(&process, &build_result.binary)?;
-            deps.logger.log(format!("saved process - {:?}", &process));
+            deps.logger.log(format!("saved process"));
             drop(schedule_info);
             match system_time_u64() {
                 Ok(timestamp) => {
@@ -171,25 +171,71 @@ pub async fn write_item(
                 process we are writing a message to. this ensures
                 no conflicts in the schedule
             */
+            let start_total = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
             let locked_schedule_info = deps.scheduler.acquire_lock(data_item.target()).await?;
             let mut schedule_info = locked_schedule_info.lock().await;
+            let end_acquire_lock = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+            deps.logger.log(format!("=== ACQUIRE LOCK - {:?}", end_acquire_lock - start_total));
+
             let updated_info = deps
                 .scheduler
                 .update_schedule_info(&mut *schedule_info, data_item.target())
                 .await?;
 
-            let build_result = builder.build_message(input, &*updated_info).await?;
-            let message = Message::from_bundle(&build_result.bundle)?;
+            let BundleOnlyResult { bundle_data_item, bundle } = builder.build_message_only(input.clone(), &*updated_info).await?;
+            let message = Message::from_bundle(&bundle)?;
+
             deps.data_store
-                .save_message(&message, &build_result.binary)
-                .await?;
-            deps.logger.log(format!("saved message - {:?}", &message));
-            upload(&deps, build_result.binary.to_vec()).await?;
+                .save_message(&message, &[])
+                .await.unwrap();
+            let deps_clone = deps.clone();
+            let updated_info_clone = ScheduleInfo {
+                epoch: updated_info.epoch,
+                nonce: updated_info.nonce,
+                timestamp: updated_info.timestamp,
+                hash_chain: updated_info.hash_chain.clone(),
+                message_id: updated_info.message_id.clone()
+            };
+            let input_clone = input.clone();
+
+            // drop lock asap and store data 'later'
             drop(schedule_info);
+
+            let _ = web::block(move || {
+                tokio::spawn(async move {
+                    deps_clone.logger.log("Background task started".into());
+                    let builder = init_builder(&deps_clone).unwrap();
+                    let start_sign = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                    // build again, with signatures...that's dumb, but "for now"...
+                    let build_result = builder.build_message(input_clone, &updated_info_clone).await;
+
+                    let result = build_result.unwrap();
+                    let message = Message::from_bundle(&result.bundle).unwrap();
+
+                    deps_clone.data_store
+                        .save_message(&message, &[])
+                        .await.unwrap();
+                    deps_clone.logger.log("saved message".to_string());
+                    let end_save_msg = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                    deps_clone.logger.log(format!("=== SAVING MESSAGE - {:?}", end_save_msg - start_sign));
+
+                    if deps_clone.config.upload_data_items() {
+                        upload(&deps_clone, result.binary.to_vec()).await.unwrap();
+                    }
+
+                    let end_upload_turbo = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                    deps_clone.logger.log(format!("Background task completed"));
+                    println!();
+                });
+            });
+
+
             match system_time_u64() {
                 Ok(timestamp) => {
                     let response_json =
-                        json!({ "timestamp": timestamp, "id": message.message_id()? });
+                        json!({ "timestamp": timestamp, "id": message.message_id()?, "message": message });
+                    let end_total = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                    deps.logger.log(format!("=== TOTAL MSG - {:?}", (end_total - start_total)));
                     Ok(response_json.to_string())
                 }
                 Err(e) => Err(format!("{:?}", e)),

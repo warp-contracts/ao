@@ -155,7 +155,8 @@ export const createApis = async (ctx) => {
     crank,
     isWallet: gatewayClient.isWalletWith({ fetch, histogram, GRAPHQL_URL: ctx.GRAPHQL_URL, logger: sendDataItemLogger }),
     logger: sendDataItemLogger,
-    writeDataItemArweave: uploaderClient.uploadDataItemWith({ UPLOADER_URL, logger: sendDataItemLogger, fetch, histogram })
+    writeDataItemArweave: uploaderClient.uploadDataItemWith({ UPLOADER_URL, logger: sendDataItemLogger, fetch, histogram }),
+    db
   })
 
   const sendAssignLogger = logger.child('sendAssign')
@@ -244,6 +245,9 @@ export const createResultApis = async (ctx) => {
   const getById = InMemoryClient.getByIdWith({ cache: isWalletCache })
   const setById = InMemoryClient.setByIdWith({ cache: isWalletCache })
 
+  const DB_URL = `${ctx.DB_URL}.sqlite`
+  const db = await SqliteClient.createSqliteClient({ url: DB_URL, bootstrap: false })
+
   const processMsgLogger = logger.child('processMsg')
   const processMsg = processMsgWith({
     selectNode: cuClient.selectNodeWith({ CU_URL, logger: processMsgLogger }),
@@ -256,7 +260,8 @@ export const createResultApis = async (ctx) => {
     fetchResult: cuClient.resultWith({ fetch: fetchWithCache, histogram, CU_URL, logger: processMsgLogger }),
     logger,
     isWallet: gatewayClient.isWalletWith({ fetch, histogram, GRAPHQL_URL: ctx.GRAPHQL_URL, logger: processMsgLogger, setById, getById }),
-    writeDataItemArweave: uploaderClient.uploadDataItemWith({ UPLOADER_URL, logger: processMsgLogger, fetch, histogram })
+    writeDataItemArweave: uploaderClient.uploadDataItemWith({ UPLOADER_URL, logger: processMsgLogger, fetch, histogram }),
+    db
   })
 
   const processSpawnLogger = logger.child('processSpawn')

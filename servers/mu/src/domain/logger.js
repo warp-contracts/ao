@@ -6,7 +6,7 @@ export const createLogger = (name) => {
 
   logger.child = (name) => createLogger(`${logger.namespace}:${name}`)
   logger.tap = (note, ...rest) =>
-    tap((...args) => logger(note, ...rest, ...args))
+    tap((...args) => { logger(note, ...rest) })
 
   return logger
 }

@@ -9,19 +9,19 @@ import httpProxy from 'http-proxy-node16'
 /**
  * TODO: we could inject these, but just keeping simple for now
  */
-import { determineHostWith, bailoutWith } from './domain.js'
+import { determineHostWith } from './domain.js'
 import { logger } from './logger.js'
 
 import { mountRoutesWithByAoUnit } from './routes/byAoUnit.js'
 
+// TODO: refactor to NOT using Ramda, as performance is crucial for us.
 export function proxyWith ({ aoUnit, hosts, subrouterUrl, surUrl, owners, processToHost, ownerToHost }) {
   const _logger = logger.child('proxy')
   _logger('Configuring to reverse proxy ao %s units...', aoUnit)
 
   const proxy = httpProxy.createProxyServer({})
 
-  const bailout = aoUnit === 'cu' ? bailoutWith({ fetch, subrouterUrl, surUrl, owners, processToHost, ownerToHost }) : undefined
-  const determineHost = determineHostWith({ hosts, bailout })
+  const determineHost = determineHostWith({ hosts })
 
   async function trampoline (init) {
     let result = init

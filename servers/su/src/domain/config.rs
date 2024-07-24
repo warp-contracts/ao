@@ -18,6 +18,7 @@ pub struct AoConfig {
     pub migration_batch_size: i64,
     pub db_write_connections: u32,
     pub db_read_connections: u32,
+    pub upload_data_items: bool
 }
 
 impl AoConfig {
@@ -47,6 +48,11 @@ impl AoConfig {
             Ok(val) => val.parse().unwrap(),
             Err(_e) => 10,
         };
+        let upload_data_items = match env::var("UPLOAD_DATA_ITEMS") {
+            Ok(val) => val == "true",
+            Err(_e) => true,
+        };
+
         Ok(AoConfig {
             database_url: env::var("DATABASE_URL")?,
             database_read_url,
@@ -60,6 +66,7 @@ impl AoConfig {
             migration_batch_size,
             db_write_connections,
             db_read_connections,
+            upload_data_items
         })
     }
 }
@@ -79,5 +86,9 @@ impl Config for AoConfig {
     }
     fn scheduler_list_path(&self) -> String {
         self.scheduler_list_path.clone()
+    }
+
+    fn upload_data_items(&self) -> bool {
+        self.upload_data_items.clone()
     }
 }

@@ -6,6 +6,7 @@ import { pullResultWith } from '../lib/pull-result.js'
 import { parseDataItemWith } from '../lib/parse-data-item.js'
 import { verifyParsedDataItemWith } from '../lib/verify-parsed-data-item.js'
 import { writeProcessTxWith } from '../lib/write-process-tx.js'
+import { getSchedulerOwner, setSchedulerOwner } from '../lib/su-cache.js'
 
 /**
  * Forward along the DataItem to the SU,
@@ -23,7 +24,8 @@ export function sendDataItemWith ({
   crank,
   logger,
   fetchSchedulerProcess,
-  writeDataItemArweave
+  writeDataItemArweave,
+  db
 }) {
   const verifyParsedDataItem = verifyParsedDataItemWith()
   const parseDataItem = parseDataItemWith({ createDataItem, logger })
@@ -96,6 +98,8 @@ export function sendDataItemWith ({
           if (hasTargetTag) {
             return Rejected({ res })
           }
+          const schedulerTag = res.dataItem.tags.find((tag) => tag.name === 'Scheduler')
+          setSchedulerOwner(db, res.dataItem.id, schedulerTag.value)
           return Resolved()
         })
         .bichain(({ res }) => {
@@ -125,7 +129,7 @@ export function sendDataItemWith ({
                   schedLocation and it will get sent directly to
                   Arweave
               */
-              return locateProcessLocal(ctx.dataItem.target)
+              return locateProcessLocal(ctx.dataItem.target, getSchedulerOwner(db, ctx.dataItem.target))
                 .chain((schedLocation) => sendMessage({ ...ctx, schedLocation }))
             }
             return sendProcess(ctx)
