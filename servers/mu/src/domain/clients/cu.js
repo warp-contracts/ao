@@ -6,7 +6,9 @@ const AO_TESTNET_PROCESS = [
   'rH_-7vT_IgfFWiDsrcTghIhb9aRclz7lXcK7RCOV2h8',
   'Us4BVLXDjtRz7Qzf7osnNcxTsi4vEjfMWo1RRTzhigQ',
   'KvQhYDJTQwpS3huPUJy5xybUDN3L8SE1mhLOBAt5l6Y',
-  'fev8nSrdplynxom78XaQ65jSo7-88RxVVVPwHG8ffZk'
+  'fev8nSrdplynxom78XaQ65jSo7-88RxVVVPwHG8ffZk',
+  '5CO540fLWa_grlzCWezBTgzO91W_kBOZzd1yjU_aSiI',
+  '4fVi8P-xSRWxZ0EE0EpltDe8WJJvcD9QyFXMqfk-1UQ'
 ]
 
 const AO_TESTNET_CU_URL = 'https://cu.ao-testnet.xyz'
