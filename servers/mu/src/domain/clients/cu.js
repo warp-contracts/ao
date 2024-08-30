@@ -10,7 +10,13 @@ const AO_TESTNET_PROCESS = [
   '5CO540fLWa_grlzCWezBTgzO91W_kBOZzd1yjU_aSiI',
   '4fVi8P-xSRWxZ0EE0EpltDe8WJJvcD9QyFXMqfk-1UQ',
   'iSkAfYYaQJQxojSXYKcWC1ruJva9EIb3JiIQNZAU5_E',
-  'agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA'
+  'agYcCFJtrMG6cqMuZfskIkFTGvUPddICmtQSBIoPdiA',
+  'OT9qTE2467gcozb2g8R6D6N3nQS94ENcaAIJfUzHCww',
+  'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
+  '_ThTRfZDNAV1Y-yX2h_9PNe5oGHh4q0eRhv6Y1tRVR0',
+  'gqJPxrG2CPuaYDsnZNXCimJdAJw9QEEBtC8OEaUWR7E',
+  '7QJydVitORyOuKW3vm50CDITiJql5wUAwhnM4XvNpYU',
+  'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10'
 ]
 
 const AO_TESTNET_CU_URL = 'https://cu.ao-testnet.xyz'
