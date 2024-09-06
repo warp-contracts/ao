@@ -19,7 +19,8 @@ const AO_TESTNET_PROCESS = [
   'xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10',
   'A87q3Fgx0zrTaC5u-ca_swqNF42rUqMfbrjNa_xY_oI', // cbbridge
   'vkRkiLKPOC4D3XnzRcS5yq7Kqb1Uv5iKsyYA_1aeLj8', // cbbridge test
-  '89_4zUaRp7RAIz4wZ7n5VgW548i6L2n__-McQzqLn4c' // cbbridge prod
+  '89_4zUaRp7RAIz4wZ7n5VgW548i6L2n__-McQzqLn4c', // cbbridge prod
+  't6rem72B6xwNnVfzNBETLkCYu5CqpmtgfCSgJt7TTx4' // cbbridge test
 ]
 
 const AO_TESTNET_CU_URL = 'https://cu.ao-testnet.xyz'
