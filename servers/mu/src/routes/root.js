@@ -58,7 +58,7 @@ const withMessageRoutes = (app) => {
             })
             .toPromise()
         } else {
-          const now = Date.now()
+          const startTime = Date.now()
           const inputSchema = z.object({
             body: z.any().refine(
               async (val) => DataItem.verify(val).catch((err) => {
@@ -85,7 +85,8 @@ const withMessageRoutes = (app) => {
                * Respond to the client after the initial data item has been forwarded,
                * then transparently continue cranking its results
                */
-              console.log('Processing Data Item took', Date.now() - now)
+              const endTime = new Date()
+              console.log(`[${endTime.toISOString()}] Processing Data Item took`, endTime.getTime() - startTime)
               res.status(202).send({ message: 'Processing DataItem', id: tx.id })
               return crankIt()
             })
