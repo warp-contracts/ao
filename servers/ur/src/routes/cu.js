@@ -5,6 +5,7 @@ export function mountCuRoutesWith ({ app, middleware }) {
   app.get('/', middleware({ processIdFromRequest: () => 'process' }))
   app.post('/result/:messageTxId', middleware({ processIdFromRequest: (req) => req.query['process-id'] }))
   app.get('/subscribe/:processId', middleware({ processIdFromRequest: (req) => req.params.processId }))
+  app.get('/current-state/:processId', middleware({ processIdFromRequest: (req) => req.params.processId }))
   // app.get('/results/:processId', middleware({ processIdFromRequest: (req) => req.params.processId }))
   // app.get('/state/:processId', middleware({ processIdFromRequest: (req) => req.params.processId }))
   // app.get('/cron/:processId', middleware({ processIdFromRequest: (req) => req.params.processId }))
