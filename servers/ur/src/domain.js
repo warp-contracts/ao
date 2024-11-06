@@ -1,7 +1,7 @@
 import { SequentialRoundRobin } from 'round-robin-js'
 
 // TODO: do sth less stupid..
-const ORACLE = ['_b21c1djDesKI5LPXBZvZbXKdkTgQIx2FsN2HXtFsqQ']
+const ORACLE = ['g4_Dzk3Ib-PBY3rnvbpGkKpG6fU_DBBy4PSaaUpQcGE', '8Iietx7-KxAENUD7QKjXrMUilgMUaDYra0Jp7L80v2M']
 
 export const bailoutWith = () => {
   throw new Error('Not implemented.')
