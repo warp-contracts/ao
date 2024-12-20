@@ -17,12 +17,20 @@ export const bailoutWith = () => {
  * been attempted, and so return undefined, to be handled upstream
  */
 export function determineHostWith ({ hosts = [] }) {
+  let oracleHost = null
+  if (ORACLE.length > 0 && hosts.length > 0) {
+    oracleHost = hosts[0]
+    if (hosts.length > 1) {
+      hosts = hosts.slice(1)
+    }
+  }
+
   const hostsRoundRobinTable = new SequentialRoundRobin(hosts)
   const processToHostCache = new Map()
 
   return async ({ processId, failoverAttempt = 0 }) => {
     if (ORACLE.includes(processId)) {
-      return hosts[0]
+      return oracleHost
     }
     if (failoverAttempt >= hosts.length) return
 
